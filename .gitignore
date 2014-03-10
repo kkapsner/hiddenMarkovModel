@@ -47,7 +47,7 @@ local.properties
 *.sdf
 *.sln
 *.suo
-*.vcsproj
+*.vcxproj
 *.filters
 [Ii]pch/
 
