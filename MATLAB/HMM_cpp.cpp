@@ -1,10 +1,10 @@
 #include "mex.h"
 #include <vector>
-#include "../../../c++/hiddenMarkovModel/InitialEmissionProbability.h" //change this to the correct path!
-#include "../../../c++/hiddenMarkovModel/GaussState.cpp" //change this to the correct path!
-#include "../../../c++/hiddenMarkovModel/HMMConfiguration.cpp" //change this to the correct path!
-#include "../../../c++/hiddenMarkovModel/HMM.cpp" //change this to the correct path!
-#include "../../../c++/hiddenMarkovModel/Binner.cpp" //change this to the correct path!
+#include "../InitialEmissionProbability.h"
+#include "../GaussState.cpp"
+#include "../HMMConfiguration.cpp"
+#include "../HMM.cpp"
+#include "../Binner.cpp"
 
 #define DEFAULT_FALSE(name){\
     value = mxGetField(options, 0, #name);\
