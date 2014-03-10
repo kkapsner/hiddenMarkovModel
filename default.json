@@ -1,0 +1,29 @@
+{
+	"states": [
+		{
+			"type": "gaussian",
+			"mean": 0,
+			"std": 1
+		},
+		{
+			"type": "gaussian",
+			"mean": 1,
+			"std": 1
+		}
+	],
+	"verbose": {
+		"enabled": false,
+		"outputTransition": true,
+		"outputEmission": false
+	},
+	"pauseAfterIteration": false,
+	
+	"minSelfTransition": 0,
+	"minEmission": 1e-6,
+	
+	"doEmissionUpdate": true,
+	"doTransitionUpdate": true,
+	"binningCount": 300,
+	"maxIterations": 100,
+	"abortStateChanges": 5
+}
