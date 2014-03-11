@@ -1,4 +1,4 @@
-#include "stdafx.h"
+#include <assert.h>
 #include "Binner.h"
 
 using namespace hiddenMarkovModel;

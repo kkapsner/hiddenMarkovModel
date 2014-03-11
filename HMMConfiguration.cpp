@@ -1,4 +1,3 @@
-#include "StdAfx.h"
 #include "HMMConfiguration.h"
 
 using namespace hiddenMarkovModel;

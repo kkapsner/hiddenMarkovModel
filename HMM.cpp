@@ -1,4 +1,5 @@
-#include "stdafx.h"
+#include "HMM.h"
+#include <assert.h>
 #include "Binner.h"
 #include "InitialEmissionProbability.h"
 #include <iostream>
