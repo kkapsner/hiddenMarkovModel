@@ -315,7 +315,7 @@ void HMM::viterbi(std::vector<unsigned int> &states){
 	}
 	
 	array2D v (this->dataSize, array1D (this->stateCount, 0));
-	std::vector<std::vector<unsigned int>> psi (this->dataSize, std::vector<unsigned int> (this->stateCount, 0));
+	std::vector<std::vector<unsigned int> > psi (this->dataSize, std::vector<unsigned int> (this->stateCount, 0));
 	for (unsigned int state = 0; state < this->stateCount; state += 1){
 		v[0][state] = log(this->gamma[0][state]) + logEmission[state][(*this->binner)[this->data[0]]];
 		psi[0][state] = 0;
