@@ -17,4 +17,4 @@ HMMConfiguration::HMMConfiguration():
 	binningCount(300),
 	maxIterations(100),
 	abortStateChanges(5)
-	{}
+	{};

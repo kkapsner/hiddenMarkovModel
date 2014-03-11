@@ -1,6 +1,6 @@
 #include "GaussState.h"
 #include <math.h>
-//#include <random>
+#include <random>
 
 using namespace hiddenMarkovModel;
 
@@ -24,9 +24,9 @@ double GaussState::pdf(double x){
 	return inv_sqrt_2pi / this->std * exp(- a * a / 2.0);
 }
 
-/*double GaussState::random(){
+double GaussState::random(){
 	std::random_device rd;
     std::mt19937 gen(rd());
 	std::normal_distribution<> d(this->mean, this->std);
 	return d(gen);
-}*/
+}

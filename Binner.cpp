@@ -1,4 +1,5 @@
 #include <assert.h>
+#include <math.h>
 #include "Binner.h"
 
 using namespace hiddenMarkovModel;
