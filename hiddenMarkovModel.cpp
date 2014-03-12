@@ -22,9 +22,12 @@ int _tmain(int argc, _TCHAR* argv[])
 	states.push_back(new GaussState(1, 1));
 
 	HMMConfiguration configuration;
+	configuration.binningCount = 100;
+	configuration.verbose = true;
+	configuration.pauseAfterIteration = true;
 	
 	std::cout << "create model" << std::endl;
-	HMM model (data, dataSize, states, 100);
+	HMM model (data, dataSize, states, configuration);
 
 	std::cout << "set transition" << std::endl;
 	for (int i = 0; i < 2; i += 1){
@@ -32,10 +35,6 @@ int _tmain(int argc, _TCHAR* argv[])
 			model.setTransition(0.5, i, j);
 		}
 	}
-  
-	model.configuration = &configuration;
-	configuration.verbose = true;
-	configuration.pauseAfterIteration = true;
 
 	model.run();
 

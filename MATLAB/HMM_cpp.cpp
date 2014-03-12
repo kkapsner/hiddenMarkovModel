@@ -127,7 +127,7 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]){
 		initStates.push_back(new GaussState(gauss[i], gauss[statesCount + i]));
 	}
 
-	HMM model (data, dataSize[0] * dataSize[1], initStates, configuration.binningCount);
+	HMM model (data, dataSize[0] * dataSize[1], initStates, configuration);
 
 	// delete state pointers
 	initStates.clear();
@@ -138,8 +138,6 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]){
 		}
 	}
 	model.autoSetSelfTransition();
-
-	model.configuration = &configuration;
 
 	model.run(iterationCount);
 

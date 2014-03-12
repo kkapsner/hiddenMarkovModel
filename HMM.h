@@ -52,10 +52,10 @@ namespace hiddenMarkovModel{
 		array2D emission;
 	public:
 		// 
-		HMMConfiguration *configuration;
+		const HMMConfiguration configuration;
 
 		// constructor
-		HMM(double *data, unsigned long dataSize, std::vector<InitialEmissionProbability*> states, unsigned int binnerSize = 300);
+		HMM(double *data, unsigned long dataSize, std::vector<InitialEmissionProbability*> states, HMMConfiguration configuration = HMMConfiguration());
 		// destructor
 		~HMM();
 			

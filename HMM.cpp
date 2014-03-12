@@ -20,16 +20,18 @@ void hiddenMarkovModel::rescaleArray(array1D &arr, double factor){
 	}
 }
 
-HMM::HMM(double *data, unsigned long dataSize, std::vector<InitialEmissionProbability*> states, unsigned int binnerSize){
+HMM::HMM(double *data, unsigned long dataSize, std::vector<InitialEmissionProbability*> states, HMMConfiguration configuration):
+	configuration (configuration)
+	{
 	unsigned int stateCount = states.size();
 	assert(dataSize > 0);
 	assert(stateCount > 0);
-	assert(binnerSize > 0);
+	assert(this->configuration.binningCount > 0);
 
 	this->data = data;
 	this->dataSize = dataSize;
 	this->stateCount = stateCount;
-	this->binner = new Binner(binnerSize, data, dataSize);
+	this->binner = new Binner(this->configuration.binningCount, data, dataSize);
 
 	// initialise 1D-arrays
 	this->scaling = array1D(this->dataSize, 1);
@@ -42,7 +44,7 @@ HMM::HMM(double *data, unsigned long dataSize, std::vector<InitialEmissionProbab
 	this->gamma = array2D(this->dataSize, array1D(this->stateCount, 1.0 / (double) this->stateCount));
 
 	// fill emission probability according to the given initial 
-	this->emission = array2D(this->stateCount, array1D(binnerSize, 0));
+	this->emission = array2D(this->stateCount, array1D(this->configuration.binningCount, 0));
 	for (unsigned int bin = 0; bin < this->binner->getSize(); bin += 1){
 		double x = this->binner->getBinValue(bin);
 		for (unsigned int i = 0; i < this->stateCount; i += 1){
@@ -210,8 +212,8 @@ void HMM::updateEmission(){
 
 		bool renorm = false;
 		for (unsigned int j = 0; j < this->binner->getSize(); j += 1){
-			if (this->emission[i][j] < this->configuration->minEmission){
-				this->emission[i][j] = this->configuration->minEmission;
+			if (this->emission[i][j] < this->configuration.minEmission){
+				this->emission[i][j] = this->configuration.minEmission;
 				renorm = true;
 			}
 		}
@@ -234,8 +236,8 @@ void HMM::updateTransition(){
 
 		// restrict transition rates
 
-		if (this->transition[i][i] < this->configuration->minSelfTransition){
-			this->transition[i][i] = this->configuration->minSelfTransition * (1 + this->transition[i][i]) / (1 - this->configuration->minSelfTransition);
+		if (this->transition[i][i] < this->configuration.minSelfTransition){
+			this->transition[i][i] = this->configuration.minSelfTransition * (1 + this->transition[i][i]) / (1 - this->configuration.minSelfTransition);
 			normaliseArray(this->transition[i]);
 		}
 	}
@@ -247,10 +249,10 @@ unsigned int HMM::iterate(){
 	this->updateBeta();
 	changeCount = this->updateGamma();
 	this->updateXi();
-	if (this->configuration->doEmissionUpdate){
+	if (this->configuration.doEmissionUpdate){
 		this->updateEmission();
 	}
-	if (this->configuration->doTransitionUpdate){
+	if (this->configuration.doTransitionUpdate){
 		this->updateTransition();
 	}
 
@@ -264,28 +266,28 @@ unsigned int HMM::run(){
 
 unsigned int HMM::run(unsigned int &i){
 	unsigned int changeCount = 0;
-	for (i = 0; i < this->configuration->maxIterations; i += 1){
-		if (this->configuration->verbose){
+	for (i = 0; i < this->configuration.maxIterations; i += 1){
+		if (this->configuration.verbose){
 			std::cout << std::endl << "start iteration " << (i + 1) << ":" << std::endl; 
 		}
 		changeCount = this->iterate();
-		if (this->configuration->verbose){
+		if (this->configuration.verbose){
 			std::cout << "changed states: " << changeCount << std::endl;
-			if (this->configuration->verboseOutputEmission){
+			if (this->configuration.verboseOutputEmission){
 				std::cout << "emission probabilities:" << std::endl;
 				this->outputEmission(std::cout);
 			}
-			if (this->configuration->verboseOutputTransition){
+			if (this->configuration.verboseOutputTransition){
 				std::cout << "transition probabilities:" << std::endl;
 				this->outputTransition(std::cout);
 			}
 		}
-		if (changeCount <= this->configuration->abortStateChanges){
+		if (changeCount <= this->configuration.abortStateChanges){
 			i += 1;
 			break;
 		}
 
-		if (this->configuration->pauseAfterIteration){
+		if (this->configuration.pauseAfterIteration){
 			std::cout << "PAUSE" << std::endl << std::endl << "Hit enter to resume." << std::endl;
 			char in[1];
 			std::cin.read(in, 1);
