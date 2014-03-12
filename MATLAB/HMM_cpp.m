@@ -33,6 +33,25 @@
 %       maxiterations (100): maximum number of iterations
 %       abortStateChanges (5): if less of equal data points change their
 %           assigned state in the last iteration the algorithm will stop.
+%       
+%       options can also be a string containing a path to a JSON
+%       configuration file. The file should look similar to:
+%             {
+%                 "verbose": {
+%                     "enabled": false,
+%                     "outputTransition": true,
+%                     "outputEmission": false
+%                 },
+% 
+%                 "minSelfTransition": 0,
+%                 "minEmission": 1e-6,
+% 
+%                 "doEmissionUpdate": true,
+%                 "doTransitionUpdate": true,
+%                 "binningCount": 300,
+%                 "maxIterations": 100,
+%                 "abortStateChanges": 5
+%             }
 %
 % Return values:
 %   fittedStates: the fitted states to the data points

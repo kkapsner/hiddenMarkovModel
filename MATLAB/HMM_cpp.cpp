@@ -1,10 +1,12 @@
 #include "mex.h"
 #include <vector>
+#include <fstream>
 #include "../InitialEmissionProbability.h"
 #include "../GaussState.cpp"
 #include "../HMMConfiguration.cpp"
 #include "../HMM.cpp"
 #include "../Binner.cpp"
+#include "../include/jsoncpp.cpp"
 
 #define DEFAULT_FALSE(name){\
     value = mxGetField(options, 0, #name);\
@@ -101,25 +103,45 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]){
 	HMMConfiguration configuration;
 	if (nrhs > 3){
 		mxArray const *options = prhs[3];
-		mxArray *value;
-		
-		value = mxGetField(options, 0, "verbose");
-		if (value != NULL && mxIsLogicalScalarTrue(value)){
-			configuration.verbose = true;
+		if (mxIsStruct(options)){
+			mxArray *value;
 			
-			DEFAULT_FALSE(verboseOutputEmission);
-			DEFAULT_TRUE(verboseOutputTransition);
+			value = mxGetField(options, 0, "verbose");
+			if (value != NULL && mxIsLogicalScalarTrue(value)){
+				configuration.verbose = true;
+				
+				DEFAULT_FALSE(verboseOutputEmission);
+				DEFAULT_TRUE(verboseOutputTransition);
+			}
+			
+			DEFAULT_DOUBLE(minSelfTransition, 0);
+			DEFAULT_DOUBLE(minEmission, 1e-6);
+			
+			DEFAULT_TRUE(doEmissionUpdate);
+			DEFAULT_TRUE(doTransitionUpdate);
+			
+			DEFAULT_INT(binningCount, 300);
+			DEFAULT_INT(maxIterations, 100);
+			DEFAULT_INT(abortStateChanges, 5);
 		}
-		
-		DEFAULT_DOUBLE(minSelfTransition, 0);
-		DEFAULT_DOUBLE(minEmission, 1e-6);
-		
-		DEFAULT_TRUE(doEmissionUpdate);
-		DEFAULT_TRUE(doTransitionUpdate);
-		
-		DEFAULT_INT(binningCount, 300);
-		DEFAULT_INT(maxIterations, 100);
-		DEFAULT_INT(abortStateChanges, 5);
+		else if (mxIsChar(options)){
+			std::ifstream file(mxArrayToString(options));
+			if (file.good()){
+				configuration = HMMConfiguration::fromFile(file);
+			}
+			else {
+				mexErrMsgIdAndTxt(
+					"MATLAB:Fit:HMM:configFileNotFound",
+					"Configuration file not found."
+				);
+			}
+		}
+		else {
+			mexErrMsgIdAndTxt(
+				"MATLAB:Fit:HMM:invalidConfigParameter",
+				"Invalid configuration parameter."
+			);
+		}
 	}
 
 	std::vector<InitialEmissionProbability*> initStates(0);
