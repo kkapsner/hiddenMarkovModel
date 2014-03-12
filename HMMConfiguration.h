@@ -1,4 +1,5 @@
 #pragma once
+#include <iostream>
 
 namespace hiddenMarkovModel {
 	class HMMConfiguration{
@@ -17,6 +18,7 @@ namespace hiddenMarkovModel {
 		unsigned int maxIterations;
 		unsigned int abortStateChanges;
 		HMMConfiguration();
+		static HMMConfiguration fromFile(std::istream &file);
 	};
 };
 

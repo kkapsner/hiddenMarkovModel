@@ -3,6 +3,7 @@
 
 #include "stdafx.h"
 #include <iostream>
+#include <fstream>
 
 
 int _tmain(int argc, _TCHAR* argv[])
@@ -21,10 +22,11 @@ int _tmain(int argc, _TCHAR* argv[])
 	states.push_back(new GaussState(0, 1));
 	states.push_back(new GaussState(1, 1));
 
-	HMMConfiguration configuration;
+	/*HMMConfiguration configuration;
 	configuration.binningCount = 100;
 	configuration.verbose = true;
-	configuration.pauseAfterIteration = true;
+	configuration.pauseAfterIteration = true;*/
+	HMMConfiguration configuration = HMMConfiguration::fromFile(std::ifstream("test.json"));
 	
 	std::cout << "create model" << std::endl;
 	HMM model (data, dataSize, states, configuration);

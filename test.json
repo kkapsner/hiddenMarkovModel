@@ -1,17 +1,17 @@
 {
 	"verbose": {
-		"enabled": false,
+		"enabled": true,
 		"outputTransition": true,
-		"outputEmission": false
+		"outputEmission": true
 	},
-	"pauseAfterIteration": false,
+	"pauseAfterIteration": true,
 	
 	"minSelfTransition": 0,
 	"minEmission": 1e-6,
 	
 	"doEmissionUpdate": true,
 	"doTransitionUpdate": true,
-	"binningCount": 300,
+	"binningCount": 100,
 	"maxIterations": 100,
 	"abortStateChanges": 5
 }
