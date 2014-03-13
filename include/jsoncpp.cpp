@@ -76,7 +76,7 @@ license you like.
 # define JSON_IS_AMALGAMATION
 #endif
 
-#include "json\json.h"
+#include "json/json.h"
 
 
 // //////////////////////////////////////////////////////////////////////

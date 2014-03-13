@@ -3,7 +3,7 @@
 #ifndef JSON_IS_AMALGAMATION
 # define JSON_IS_AMALGAMATION
 #endif
-#include "include\json/json.h"
+#include "include/json/json.h"
 
 #define READ_CONFIG(name, as){\
 	configuration.name = root.get(#name, configuration.name).as();\
