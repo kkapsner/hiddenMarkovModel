@@ -1,19 +1,13 @@
 #pragma once
+#include "typedefs.h"
 #include "Binner.h"
 #include "HMMConfiguration.h"
 #include "InitialEmissionProbability.h"
-#include <vector>
 
 // for verbose output
 #include <iostream>
 
 namespace hiddenMarkovModel{
-	typedef std::vector<double> array1D;
-	typedef std::vector<array1D> array2D;
-	typedef std::vector<array2D> array3D;
-
-	double normaliseArray(array1D &arr);
-	void rescaleArray(array1D &arr, double factor);
 
 	class HMM
 	{

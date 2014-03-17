@@ -6,19 +6,6 @@
 
 using namespace hiddenMarkovModel;
 
-double hiddenMarkovModel::normaliseArray(array1D &arr){
-	double sum = 0;
-	for (array1D::iterator iter = arr.begin(); iter < arr.end(); iter++){
-		sum += *iter;
-	}
-	rescaleArray(arr, sum);
-	return sum;
-}
-void hiddenMarkovModel::rescaleArray(array1D &arr, double factor){
-	for (array1D::iterator iter = arr.begin(); iter < arr.end(); iter++){
-		*iter /= factor;
-	}
-}
 
 HMM::HMM(double *data, unsigned long dataSize, std::vector<InitialEmissionProbability*> states, HMMConfiguration configuration):
 	configuration (configuration)
