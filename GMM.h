@@ -5,16 +5,18 @@
 namespace hiddenMarkovModel{
 	class GMM{
 		private:
-			const double *data;
-			const unsigned int dataSize;
+			array1D data;
 			array1D pi;
 			array2D chi;
 		public:
 			std::vector<GaussState> states;
 			double changeThreshold;
-
-			GMM(const double *data, const unsigned int dataSize, std::vector<GaussState> states);
+			
+			GMM(array1D data, std::vector<GaussState> states);
+			GMM(array1D data, std::vector<GaussState> states, array1D pi);
 			~GMM(void);
+
+			void initialiseStates();
 
 			void updateChi();
 			double updatePi();
@@ -23,6 +25,7 @@ namespace hiddenMarkovModel{
 
 			double iterate();
 			double run();
+			double run(unsigned int &iterationCount);
 	};
 }
 
