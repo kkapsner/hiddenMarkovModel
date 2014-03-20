@@ -13,8 +13,8 @@ namespace hiddenMarkovModel{
 		GaussState(double mean, double std);
 		~GaussState();
 
-		virtual double pdf(double x);
-		virtual double random();
+		virtual double pdf(double x) const;
+		virtual double random() const;
 	};
 };
 

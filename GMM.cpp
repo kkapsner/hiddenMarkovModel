@@ -7,7 +7,7 @@ using namespace hiddenMarkovModel;
 
 GMM::GMM(array1D data, std::vector<GaussState> states):
 	data(data),
-	changeThreshold(1e-5),
+	changeThreshold(1e-4),
 	states(states)
 {
 	this->pi = array1D(this->states.size(), 1.0/(double) this->states.size());
@@ -16,7 +16,7 @@ GMM::GMM(array1D data, std::vector<GaussState> states):
 
 GMM::GMM(array1D data, std::vector<GaussState> states, array1D pi):
 	data(data),
-	changeThreshold(1e-5),
+	changeThreshold(1e-4),
 	states(states),
 	pi(pi)
 {
@@ -133,8 +133,17 @@ double GMM::run(unsigned int &iterationCount){
 	double changeRatio = this->changeThreshold + 1;
 	while (changeRatio > this->changeThreshold){
 		iterationCount += 1;
-		std::cout << "Iteration " << iterationCount << std::endl;
+		std::cout << "Iteration " << iterationCount;
 		changeRatio = this->iterate();
+		std::cout << " (" << changeRatio << ")" << std::endl;
+		
+		for (unsigned int state = 0; state < this->states.size(); state += 1){
+			std::cout << "State " << (state + 1) << ": " <<
+				"pi: " << this->pi[state] << ", "
+				"mu: " << this->states[state].mean << ", "
+				"sigma: " << this->states[state].std << std::endl;
+		}
+		std::cout << std::endl;
 	}
 	return changeRatio;
 }

@@ -1,6 +1,7 @@
 #include "mex.h"
 #include <vector>
 #include <fstream>
+#include "../typedefs.cpp"
 #include "../InitialEmissionProbability.h"
 #include "../GaussState.cpp"
 #include "../HMMConfiguration.cpp"
