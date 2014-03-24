@@ -20,8 +20,8 @@ namespace hiddenMarkovModel{
 
 			void updateChi();
 			double updatePi();
-			void updateMu();
-			void updateSigma();
+			double updateMu();
+			double updateSigma();
 
 			double iterate();
 			double run();

@@ -90,37 +90,56 @@ double GMM::updatePi(){
 
 	return sqrt(changeSum2 / sum2);
 }
-void GMM::updateMu(){
+double GMM::updateMu(){
 	unsigned int dataSize = this->data.size();
 	unsigned int statesCount = this->states.size();
+	double changeSum2 = 0;
+	double sum2 = 0;
+
 	for (unsigned int state = 0; state < statesCount; state += 1){
 		double sum = 0;
 		for (unsigned int t = 0; t < dataSize; t += 1){
 			sum += this->data[t] * this->chi[t][state];
 		}
+
+		double oldMean = this->states[state].mean;
 		this->states[state].mean = sum / this->pi[state] / dataSize;
+
+		changeSum2 += (oldMean - this->states[state].mean) * (oldMean - this->states[state].mean);
+		sum2 += this->states[state].mean * this->states[state].mean;
 	}
+
+	return sqrt(changeSum2 / sum2);
 }
-void GMM::updateSigma(){
+double GMM::updateSigma(){
 	unsigned int dataSize = this->data.size();
 	unsigned int statesCount = this->states.size();
+	double changeSum2 = 0;
+	double sum2 = 0;
+
 	for (unsigned int state = 0; state < statesCount; state += 1){
 		double sum = 0;
 		for (unsigned int t = 0; t < dataSize; t += 1){
 			double diff = (this->data[t] - this->states[state].mean);
 			sum += diff * diff * this->chi[t][state];
 		}
+		double oldStd = this->states[state].std;
 		this->states[state].std = sqrt(sum / this->pi[state] / dataSize);
+
+		changeSum2 += (oldStd - this->states[state].std) * (oldStd - this->states[state].std);
+		sum2 += this->states[state].std * this->states[state].std;
 	}
+
+	return sqrt(changeSum2 / sum2);
 }
 
 double GMM::iterate(){
-	double changeRatio;
+	double changeRatio = 0;
 	this->updateChi();
-	changeRatio = this->updatePi();
-	this->updateMu();
-	this->updateSigma();
-	return changeRatio;
+	changeRatio += this->updatePi();
+	changeRatio += this->updateMu();
+	changeRatio += this->updateSigma();
+	return changeRatio / 3;
 }
 
 double GMM::run(){

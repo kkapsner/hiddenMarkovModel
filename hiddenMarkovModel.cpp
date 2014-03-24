@@ -87,7 +87,8 @@ int _tmain(int argc, _TCHAR* argv[])
 	states.push_back(GaussState(0, 20));
 	states.push_back(GaussState(50, 20));
 	states.push_back(GaussState(100, 20));
-
+	
+	std::cout << "simulate data" << std::endl;
 	simulateHMM(data, state, transition, states, dataSize);
 	
 	std::cout << "create model" << std::endl;
