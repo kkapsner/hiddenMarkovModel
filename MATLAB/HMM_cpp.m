@@ -93,5 +93,5 @@
 %     'abortStateChanges', 5 ...
 % );
 % [states, transitionMatrix, emissionProbabilties, iterationCount] = ...
-%     HMM_cpp(data, transtions, [means, stds], options);
+%     HMM_cpp(data, transitions, [means, stds], options);
 
