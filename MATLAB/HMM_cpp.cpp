@@ -38,7 +38,7 @@
 
 void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]){
 	double *data, *transition, *gauss, *statesOut;
-	unsigned int dataSize[2], statesCount, iterationCount;
+	unsigned int dataSize[2], dataPointCount, dataStart, dataEnd, statesCount, iterationCount;
 
 	/* Check for proper number of arguments. */
 	if(nrhs < 3) {
@@ -68,6 +68,7 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]){
 
 	dataSize[0] = (int) mxGetM(prhs[0]);
 	dataSize[1] = (int) mxGetN(prhs[0]);
+	dataPointCount = dataSize[0] * dataSize[1];
 	statesCount = (int) mxGetM(prhs[1]);
 	if (mxGetN(prhs[1]) != statesCount){
 		mexErrMsgIdAndTxt(
@@ -149,8 +150,23 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]){
 	for (unsigned int i = 0; i < statesCount; i += 1){
 		initStates.push_back(new GaussState(gauss[i], gauss[statesCount + i]));
 	}
+	
+	// check for NaN at the start
+	dataStart = 0;
+	for (unsigned int i = 0; i < dataPointCount; i += 1){
+		if (!mxIsNaN(data[i])){
+			dataStart = i;
+			break;
+		}
+	}
+	// check for NaN at the end
+	for (dataEnd = dataStart; dataEnd < dataPointCount; dataEnd += 1){
+		if (mxIsNaN(data[dataEnd])){
+			break;
+		}
+	}
 
-	HMM model (data, dataSize[0] * dataSize[1], initStates, configuration);
+	HMM model (data + dataStart, dataEnd - dataStart, initStates, configuration);
 
 	// delete state pointers
 	initStates.clear();
@@ -164,12 +180,17 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]){
 
 	model.run(iterationCount);
 
-	std::vector<unsigned int> states (dataSize[0] * dataSize[1], 0);
+	std::vector<unsigned int> states (dataEnd - dataStart, 0);
 
 	model.viterbi(states);
 
 	for (unsigned int i = 0; i < dataSize[0] * dataSize[1]; i += 1){
-		statesOut[i] = (double) states[i] + 1;
+		if (i < dataStart || i >= dataEnd){
+			statesOut[i] = mxGetNaN();
+		}
+		else {
+			statesOut[i] = (double) states[i - dataStart] + 1;
+		}
 	}
 	
 	if (nlhs > 1){

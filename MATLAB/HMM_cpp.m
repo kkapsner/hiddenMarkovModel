@@ -1,7 +1,12 @@
 %HMM_CPP performs a hidden markov model (HMM) analysis on the given dataset
 %
 %Parameter:
-%   data: vector of the data to be modeled with a HMM
+%   data: vector of the data to be modeled with a HMM. If there are any NaN
+%       values in the dataset the algorithm will only take the first
+%       non-NaN part.
+%       E.g.: if data = [nan, 1, 2, 3, nan, nan, 4, nan, 5, 6, nan, 7] only
+%       [1, 2, 3] will be used. Nevertheless the output will be 12 enties
+%       long: states = [nan, state of 1, state of 2, state of 3, nan, ...]
 %   transitions: initial transition probability to change from state i to
 %       state j: transition(i, j)
 %       This has to be a MxM matrix. M defines the number of states that
