@@ -38,6 +38,12 @@
 %       maxiterations (100): maximum number of iterations
 %       abortStateChanges (5): if less of equal data points change their
 %           assigned state in the last iteration the algorithm will stop.
+%       useMinimalBinningRange (false): if a minimal binning range should
+%           be used.
+%       lowerBinningRangeLimit (0): the lower limit of the minimal binning
+%           range (if used).
+%       upperBinningRangeLimit (1): the upper limit of the minimal binning
+%           range (if used).
 %       
 %       options can also be a string containing a path to a JSON
 %       configuration file. The file should look similar to:
@@ -55,7 +61,13 @@
 %                 "doTransitionUpdate": true,
 %                 "binningCount": 300,
 %                 "maxIterations": 100,
-%                 "abortStateChanges": 5
+%                 "abortStateChanges": 5,
+%                 
+%                 "minimalBinningRange": {
+%                     "enabled": false,
+%                     "lowerLimit": 0,
+%                     "upperLimit": 1
+%                 }
 %             }
 %
 % Return values:
@@ -67,6 +79,7 @@
 %       This will be a MxN matrix where M is the number of states in the
 %       model and N is the number of bins where the data was binned in (see
 %       binningCount field in options parameter).
+%   emissionBinCenter: the centers of the bin used for the emission binning
 %   numberOfIterations: number of iterations the algorithm performed.
 %
 %Calling schemes:
@@ -78,7 +91,7 @@
 % example code:
 %
 % means = [1; 4; 7]; % make sure this is a column vector
-% std = [0.1; 0.2; 1]; % this also has to be a column vector
+% stds = [0.1; 0.2; 1]; % this also has to be a column vector
 % transitions = [ ...
 %     [0; 0.1; 0.1], ... the 0 will be computed to 0.8
 %     [0.1; 0; 0], ... the first 0 will be computed to 0.9
@@ -95,8 +108,11 @@
 %     'doTransitionUpdate', true, ...
 %     'binningCount', 300, ...
 %     'maxiterations', 100, ...
-%     'abortStateChanges', 5 ...
+%     'abortStateChanges', 5, ...
+%     'useMinimalBinningRange', false, ...
+%     'lowerBinningRangeLimit', 0, ...
+%     'upperBinningRangeLimit', 1 ...
 % );
-% [states, transitionMatrix, emissionProbabilties, iterationCount] = ...
+% [states, transitionMatrix, emissionProbabilties, emissionBinCenters, iterationCount] = ...
 %     HMM_cpp(data, transitions, [means, stds], options);
 

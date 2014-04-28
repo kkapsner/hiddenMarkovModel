@@ -52,6 +52,8 @@ namespace hiddenMarkovModel{
 		HMM(double *data, unsigned long dataSize, std::vector<InitialEmissionProbability*> states, HMMConfiguration configuration = HMMConfiguration());
 		// destructor
 		~HMM();
+
+		void getBinningRange(array1D &range);
 			
 		// void setTransitionMatrix(double **transitions);
 		void setTransition(double transition, unsigned int from, unsigned int to);

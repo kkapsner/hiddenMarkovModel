@@ -46,7 +46,7 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]){
 			"MATLAB:Fit:HMM:invalidNumInputs",
 			"Three input arguments required."
 		);
-	} else if(nlhs > 4) {
+	} else if(nlhs > 5) {
 		mexErrMsgIdAndTxt(
 			"MATLAB:Fit:HMM:maxlhs",
 			"Too many output arguments."
@@ -106,6 +106,7 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]){
 	if (nrhs > 3){
 		mxArray const *options = prhs[3];
 		if (mxIsStruct(options)){
+			// load configuration from MATLAB struct
 			mxArray *value;
 			
 			value = mxGetField(options, 0, "verbose");
@@ -125,8 +126,15 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]){
 			DEFAULT_INT(binningCount, 300);
 			DEFAULT_INT(maxIterations, 100);
 			DEFAULT_INT(abortStateChanges, 5);
+            
+            DEFAULT_FALSE(useMinimalBinningRange);
+            if (configuration.useMinimalBinningRange){
+                DEFAULT_DOUBLE(lowerBinningRangeLimit, 0);
+                DEFAULT_DOUBLE(upperBinningRangeLimit, 1);
+            }
 		}
 		else if (mxIsChar(options)){
+			// load configuration from file
 			std::ifstream file(mxArrayToString(options));
 			if (file.good()){
 				configuration = HMMConfiguration::fromFile(file);
@@ -177,7 +185,6 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]){
 		}
 	}
 	model.autoSetSelfTransition();
-
 	model.run(iterationCount);
 
 	std::vector<unsigned int> states (dataEnd - dataStart, 0);
@@ -212,11 +219,29 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]){
 					emissionOut[state + bin * statesCount] = model.getEmissionPropability(state, bin);
 				}
 			}
-			
-			if (nlhs > 3){
-				/* Create matrix for the iteration count output. */
-				plhs[3] = mxCreateDoubleScalar((double) iterationCount);
-			}
+            
+            if (nlhs > 3){
+                /* Create vector for the emission binning centers. */
+                array1D range(2, 0);
+                model.getBinningRange(range);
+                double binStart = range[0];
+                double binDiff = range[1] - range[0];
+                
+                plhs[3] = mxCreateDoubleMatrix(1, configuration.binningCount, mxREAL);
+                double *binningCenters = mxGetPr(plhs[3]);
+                for (unsigned int bin = 0; bin < configuration.binningCount; bin += 1){
+                    binningCenters[bin] = binStart +
+						binDiff * (
+							(0.5 + (double) bin) /
+							(double) configuration.binningCount
+						);
+                }
+                
+                if (nlhs > 4){
+                    /* Create matrix for the iteration count output. */
+                    plhs[4] = mxCreateDoubleScalar((double) iterationCount);
+                }
+            }
 		}
 	}
 }

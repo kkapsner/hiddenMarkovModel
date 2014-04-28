@@ -16,6 +16,8 @@ namespace hiddenMarkovModel{
 		public:
 			// constructor
 			Binner(unsigned int size, double* dataToFit, unsigned long dataSize);
+			Binner(unsigned int size, double* dataToFit, unsigned long dataSize, double minValue, double maxValue);
+			Binner(unsigned int size, double minValue, double maxValue);
 
 			/**
 			 * returns the bin to a given value. Throws an exception if the value is out of bound.

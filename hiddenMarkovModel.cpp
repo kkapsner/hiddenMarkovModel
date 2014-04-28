@@ -1,6 +1,6 @@
 // hiddenMarkovModel.cpp : Definiert den Einstiegspunkt für die Konsolenanwendung.
 //
-/*
+
 #include "stdafx.h"
 #include <iostream>
 #include <fstream>
@@ -31,6 +31,10 @@ int _tmain(int argc, _TCHAR* argv[])
 	std::cout << "create model" << std::endl;
 	HMM model (data, dataSize, states, configuration);
 
+	array1D binnerRange(2, 0);
+	model.getBinningRange(binnerRange);
+	std::cout << "binning range: " << binnerRange[0] << " to " << binnerRange[1]<< std::endl;
+
 	std::cout << "set transition" << std::endl;
 	for (int i = 0; i < 2; i += 1){
 		for (int j = 0; j < 2; j += 1){
@@ -53,10 +57,10 @@ int _tmain(int argc, _TCHAR* argv[])
 	std::cin.read(in, 1);
 	return 0;
 }
-*/
+
 // hiddenMarkovModel.cpp : Definiert den Einstiegspunkt für die Konsolenanwendung.
 //
-
+/*
 #include "stdafx.h"
 #include "GMM.h"
 #include <iostream>
@@ -101,4 +105,4 @@ int _tmain(int argc, _TCHAR* argv[])
 	std::cin.read(in, 1);
 	return 0;
 }
-
+*/

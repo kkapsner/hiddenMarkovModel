@@ -17,6 +17,12 @@ namespace hiddenMarkovModel {
 		unsigned int binningCount;
 		unsigned int maxIterations;
 		unsigned int abortStateChanges;
+
+		bool useMinimalBinningRange;
+
+		double lowerBinningRangeLimit;
+		double upperBinningRangeLimit;
+
 		HMMConfiguration();
 		static HMMConfiguration fromFile(std::istream &file);
 	};

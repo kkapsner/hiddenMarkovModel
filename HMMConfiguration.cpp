@@ -25,7 +25,11 @@ HMMConfiguration::HMMConfiguration():
 	doTransitionUpdate(true),
 	binningCount(300),
 	maxIterations(100),
-	abortStateChanges(5)
+	abortStateChanges(5),
+
+	useMinimalBinningRange(false),
+	lowerBinningRangeLimit(0),
+	upperBinningRangeLimit(1)
 	{};
 
 HMMConfiguration HMMConfiguration::fromFile(std::istream &file){
@@ -47,6 +51,12 @@ HMMConfiguration HMMConfiguration::fromFile(std::istream &file){
 		READ_CONFIG(binningCount, asUInt);
 		READ_CONFIG(maxIterations, asUInt);
 		READ_CONFIG(abortStateChanges, asUInt);
+		
+		if (root.isMember("minimalBinningRange") && root["minimalBinningRange"].isObject()){
+			configuration.useMinimalBinningRange = root["minimalBinningRange"].get("enabled", configuration.verbose).asBool();
+			configuration.lowerBinningRangeLimit = root["minimalBinningRange"].get("lowerLimit", configuration.lowerBinningRangeLimit).asDouble();
+			configuration.upperBinningRangeLimit = root["minimalBinningRange"].get("upperLimit", configuration.upperBinningRangeLimit).asDouble();
+		}
 	}
 	else {
 		std::cerr << "Failed to parse configuration" << std::endl

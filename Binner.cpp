@@ -28,6 +28,44 @@ Binner::Binner(unsigned int size, double *dataToFit, unsigned long dataSize){
 	this->binSize = (this->max - this->min) / this->size;
 };
 
+Binner::Binner(unsigned int size, double *dataToFit, unsigned long dataSize, double minValue, double maxValue){
+	assert(size > 0);
+	assert(dataSize > 0);
+
+	this->size = size;
+	this->min = minValue;
+	this->max = maxValue;
+
+	for (unsigned long i = 0; i < dataSize; i += 1){
+		if (dataToFit[i] < min){
+			this->min = dataToFit[i];
+		}
+		else if (dataToFit[i] > max){
+			this->max = dataToFit[i];
+		}
+	}
+
+	if (this->max <= this->min){
+		this->max = this->min + 1;
+	}
+
+	this->binSize = (this->max - this->min) / this->size;
+};
+
+Binner::Binner(unsigned int size, double minValue, double maxValue){
+	assert(size > 0);
+
+	this->size = size;
+	this->min = minValue;
+	this->max = maxValue;
+
+	if (this->max <= this->min){
+		this->max = this->min + 1;
+	}
+
+	this->binSize = (this->max - this->min) / this->size;
+};
+
 unsigned int Binner::getBinIndex(double value) const{
 	assert(value >= this->min);
 	assert(value <= this->max);

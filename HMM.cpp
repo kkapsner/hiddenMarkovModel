@@ -18,7 +18,18 @@ HMM::HMM(double *data, unsigned long dataSize, std::vector<InitialEmissionProbab
 	this->data = data;
 	this->dataSize = dataSize;
 	this->stateCount = stateCount;
-	this->binner = new Binner(this->configuration.binningCount, data, dataSize);
+	if (this->configuration.useMinimalBinningRange){
+		this->binner = new Binner(
+			this->configuration.binningCount,
+			data,
+			dataSize,
+			this->configuration.lowerBinningRangeLimit,
+			this->configuration.upperBinningRangeLimit
+		);
+	}
+	else {
+		this->binner = new Binner(this->configuration.binningCount, data, dataSize);
+	}
 
 	// initialise 1D-arrays
 	this->scaling = array1D(this->dataSize, 1);
@@ -49,6 +60,12 @@ HMM::HMM(double *data, unsigned long dataSize, std::vector<InitialEmissionProbab
 
 HMM::~HMM(){
 	delete this->binner;
+}
+
+void HMM::getBinningRange(array1D &range){
+	range.resize(2);
+	range[0] = this->binner->getMin();
+	range[1] = this->binner->getMax();
 }
 
 
@@ -165,15 +182,21 @@ unsigned int HMM::updateGamma(){
 
 void HMM::updateXi(){
 	for (unsigned int t = 0; t < this->dataSize - 1; t += 1){
+		double normalisation = 0;
+		for (unsigned int i = 0; i < this->stateCount; i += 1){
+			normalisation += this->alpha[t][i] * this->beta[t][i];
+		}
+		assert(normalisation > 0);
+
 		for (unsigned int i = 0; i < this->stateCount; i += 1){
 			for (unsigned int j = 0; j < this->stateCount; j += 1){
 				this->xi[t][i][j] = (
-					this->gamma[t][i] *
+					this->alpha[t][i] *
 					this->transition[i][j] *
 					this->emission[j][(*this->binner)[this->data[t+1]]] *
 					this->scaling[t+1] *
 					this->beta[t+1][j] /
-					this->beta[t][i]
+					normalisation
 				);
 			}
 		}

@@ -13,5 +13,11 @@
 	"doTransitionUpdate": true,
 	"binningCount": 100,
 	"maxIterations": 100,
-	"abortStateChanges": 5
+	"abortStateChanges": 5,
+
+	"minimalBinningRange": {
+		"enabled": true,
+		"lowerLimit": -1,
+		"upperLimit": 1
+	}
 }
