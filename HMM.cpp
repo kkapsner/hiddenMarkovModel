@@ -46,7 +46,7 @@ HMM::HMM(double *data, unsigned long dataSize, std::vector<InitialEmissionProbab
 	for (unsigned int bin = 0; bin < this->binner->getSize(); bin += 1){
 		double x = this->binner->getBinValue(bin);
 		for (unsigned int i = 0; i < this->stateCount; i += 1){
-			this->emission[i][bin] = states[i]->pdf(x);
+			this->emission[i][bin] = std::max(states[i]->pdf(x), this->configuration.minEmission);
 		}
 	}
 	for (unsigned int i = 0; i < this->stateCount; i += 1){
