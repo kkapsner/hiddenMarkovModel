@@ -166,3 +166,9 @@ double GMM::run(unsigned int &iterationCount){
 	}
 	return changeRatio;
 }
+
+void GMM::getPi(double *outPi){
+	for (unsigned int state = 0; state < this->states.size(); state += 1){
+		outPi[state] = this->pi[state];
+	}
+}

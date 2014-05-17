@@ -26,6 +26,8 @@ namespace hiddenMarkovModel{
 			double iterate();
 			double run();
 			double run(unsigned int &iterationCount);
+
+			void getPi(double *piOut);
 	};
 }
 

@@ -19,7 +19,7 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]){
 			"MATLAB:Fit:GMM:maxlhs",
 			"Too few output arguments."
 		);
-	} else if(nlhs > 3) {
+	} else if(nlhs > 4) {
 		mexErrMsgIdAndTxt(
 			"MATLAB:Fit:GMM:maxlhs",
 			"Too many output arguments."
@@ -91,7 +91,17 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]){
 	}
 	
 	if (nlhs > 2){
+		/* Create matrix for the gaussian mixture output. */
+		plhs[2] = mxCreateDoubleMatrix(statesCount, 1, mxREAL);
+		double *mixture;
+		mixture = mxGetPr(plhs[2]);
+		for (unsigned int state = 0; state < statesCount; state += 1){
+			model.getPi(mixture);
+		}
+		
+	}
+	if (nlhs > 3){
 		/* Create matrix for the iteration count output. */
-		plhs[2] = mxCreateDoubleScalar((double) iterationCount);
+		plhs[3] = mxCreateDoubleScalar((double) iterationCount);
 	}
 }
