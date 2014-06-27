@@ -7,10 +7,27 @@
 using namespace hiddenMarkovModel;
 
 
+HMM::HMM(double *data, std::vector<unsigned long> chunkSizes, std::vector<InitialEmissionProbability*> states, HMMConfiguration configuration):
+	configuration (configuration)
+	{
+		this->init(data, chunkSizes, states);
+}
 HMM::HMM(double *data, unsigned long dataSize, std::vector<InitialEmissionProbability*> states, HMMConfiguration configuration):
 	configuration (configuration)
 	{
+		this->init(data, std::vector<unsigned long>(1, dataSize), states);
+}
+void HMM::init(double *data, std::vector<unsigned long> chunkSizes, std::vector<InitialEmissionProbability*> states){
 	unsigned int stateCount = states.size();
+
+	unsigned long dataSize = 0;
+	this->chunkCount = chunkSizes.size();
+	this->chunkSizes = std::vector<unsigned long>(this->chunkCount, 0); //chunkSizes; //
+	for (long i = this->chunkCount - 1; i >= 0; i -= 1){
+		dataSize += chunkSizes[i];
+		this->chunkSizes[i] = chunkSizes[i];
+	}
+
 	assert(dataSize > 0);
 	assert(stateCount > 0);
 	assert(this->configuration.binningCount > 0);
@@ -122,36 +139,57 @@ double HMM::getTransition(unsigned int from, unsigned int to){
 }
 
 void HMM::updateAlpha(){
-	// first time point
-	for (unsigned int i = 0; i < this->stateCount; i += 1){
-		this->alpha[0][i] = this->gamma[0][i] * this->emission[i][(*this->binner)[this->data[0]]];
-	}
-	this->scaling[0] = normaliseArray(this->alpha[0]);
+	unsigned long timeOffset = 0;
+	for (unsigned int chunkIndex = 0; chunkIndex < this->chunkCount; chunkIndex += 1){
+		unsigned long currentChunkSizes = this->chunkSizes[chunkIndex];
 
-	for (unsigned int i = 1; i < this->dataSize; i += 1){
-		for (unsigned int j = 0; j < this->stateCount; j += 1){
-			this->alpha[i][j] = 0;
-			for (unsigned int k = 0; k < this->stateCount; k += 1){
-				this->alpha[i][j] += this->alpha[i-1][k] * this->transition[k][j] * this->emission[j][(*this->binner)[this->data[i]]];
-			}
+		// first time point
+		for (unsigned int i = 0; i < this->stateCount; i += 1){
+			this->alpha[timeOffset][i] = this->gamma[timeOffset][i] * this->emission[i][(*this->binner)[this->data[0]]];
 		}
-		this->scaling[i] = normaliseArray(this->alpha[i]);
+		this->scaling[timeOffset] = normaliseArray(this->alpha[timeOffset]);
+
+		for (unsigned int i = 1; i < currentChunkSizes; i += 1){
+			for (unsigned int j = 0; j < this->stateCount; j += 1){
+				this->alpha[timeOffset + i][j] = 0;
+				for (unsigned int k = 0; k < this->stateCount; k += 1){
+					this->alpha[timeOffset + i][j] +=
+						this->alpha[timeOffset + i-1][k] *
+						this->transition[k][j] *
+						this->emission[j][(*this->binner)[this->data[timeOffset + i]]];
+				}
+			}
+			this->scaling[timeOffset + i] = normaliseArray(this->alpha[timeOffset + i]);
+		}
+
+		timeOffset += currentChunkSizes;
 	}
 }
 
 void HMM::updateBeta(){
-	for (unsigned int i = 0; i < this->stateCount; i += 1){
-		this->beta[this->dataSize - 1][i] = 1;
-	}
-	for (int i = this->dataSize - 2; i >= 0; i -= 1){
-		for (unsigned int j = 0; j < this->stateCount; j += 1){
-			this->beta[i][j] = 0;
-			for (unsigned int k = 0; k < this->stateCount; k += 1){
-				this->beta[i][j] += this->beta[i+1][k] * this->transition[j][k] * this->emission[k][(*this->binner)[this->data[i+1]]];
-			}
-			
+	unsigned long timeOffset = this->dataSize;
+	
+	for (unsigned int chunkIndex = 0; chunkIndex < this->chunkCount; chunkIndex += 1){
+		unsigned long currentChunkSizes = this->chunkSizes[chunkIndex];
+
+		timeOffset -= currentChunkSizes;
+
+		for (unsigned int i = 0; i < this->stateCount; i += 1){
+			this->beta[timeOffset + currentChunkSizes - 1][i] = 1;
 		}
-		rescaleArray(this->beta[i], this->scaling[i]);
+		for (int i = currentChunkSizes - 2; i >= 0; i -= 1){
+			for (unsigned int j = 0; j < this->stateCount; j += 1){
+				this->beta[timeOffset + i][j] = 0;
+				for (unsigned int k = 0; k < this->stateCount; k += 1){
+					this->beta[timeOffset + i][j] +=
+						this->beta[timeOffset + i+1][k] *
+						this->transition[j][k] *
+						this->emission[k][(*this->binner)[this->data[timeOffset + i+1]]];
+				}
+			
+			}
+			rescaleArray(this->beta[timeOffset + i], this->scaling[timeOffset + i]);
+		}
 	}
 }
 
@@ -181,25 +219,32 @@ unsigned int HMM::updateGamma(){
 }
 
 void HMM::updateXi(){
-	for (unsigned int t = 0; t < this->dataSize - 1; t += 1){
-		double normalisation = 0;
-		for (unsigned int i = 0; i < this->stateCount; i += 1){
-			normalisation += this->alpha[t][i] * this->beta[t][i];
-		}
-		assert(normalisation > 0);
+	unsigned long timeOffset = 0;
+	for (unsigned int chunkIndex = 0; chunkIndex < this->chunkCount; chunkIndex += 1){
+		unsigned long currentChunkSizes = this->chunkSizes[chunkIndex];
 
-		for (unsigned int i = 0; i < this->stateCount; i += 1){
-			for (unsigned int j = 0; j < this->stateCount; j += 1){
-				this->xi[t][i][j] = (
-					this->alpha[t][i] *
-					this->transition[i][j] *
-					this->emission[j][(*this->binner)[this->data[t+1]]] *
-					this->scaling[t+1] *
-					this->beta[t+1][j] /
-					normalisation
-				);
+		for (unsigned int t = 0; t < currentChunkSizes - 1; t += 1){
+			double normalisation = 0;
+			for (unsigned int i = 0; i < this->stateCount; i += 1){
+				normalisation += this->alpha[timeOffset + t][i] * this->beta[timeOffset + t][i];
+			}
+			assert(normalisation > 0);
+
+			for (unsigned int i = 0; i < this->stateCount; i += 1){
+				for (unsigned int j = 0; j < this->stateCount; j += 1){
+					this->xi[timeOffset + t][i][j] = (
+						this->alpha[timeOffset + t][i] *
+						this->transition[i][j] *
+						this->emission[j][(*this->binner)[this->data[t+1]]] *
+						this->scaling[timeOffset + t+1] *
+						this->beta[timeOffset + t+1][j] /
+						normalisation
+					);
+				}
 			}
 		}
+
+		timeOffset += currentChunkSizes;
 	}
 }
 
@@ -238,8 +283,15 @@ void HMM::updateTransition(){
 	for (unsigned int i = 0; i < this->stateCount; i += 1){
 		for (unsigned int j = 0; j < this->stateCount; j += 1){
 			this->transition[i][j] = 0;
-			for (unsigned int t = 0; t < this->dataSize - 1; t += 1){
-				this->transition[i][j] += this->xi[t][i][j];
+
+			unsigned long timeOffset = 0;
+			for (unsigned int chunkIndex = 0; chunkIndex < this->chunkCount; chunkIndex += 1){
+				unsigned long currentChunkSizes = this->chunkSizes[chunkIndex];
+
+				for (unsigned int t = 0; t < currentChunkSizes - 1; t += 1){
+					this->transition[i][j] += this->xi[timeOffset + t][i][j];
+				}
+				timeOffset += currentChunkSizes;
 			}
 		}
 		normaliseArray(this->transition[i]);
@@ -275,6 +327,17 @@ unsigned int HMM::run(){
 }
 
 unsigned int HMM::run(unsigned int &i){
+	if (this->configuration.verbose){
+		if (this->configuration.verboseOutputEmission){
+			std::cout << "initial emission probabilities:" << std::endl;
+			this->outputEmission(std::cout);
+		}
+		if (this->configuration.verboseOutputTransition){
+			std::cout << "initial transition probabilities:" << std::endl;
+			this->outputTransition(std::cout);
+		}
+	}
+
 	unsigned int changeCount = 0;
 	for (i = 0; i < this->configuration.maxIterations; i += 1){
 		if (this->configuration.verbose){
@@ -332,46 +395,52 @@ void HMM::viterbi(std::vector<unsigned int> &states){
 		v[0][state] = log(this->gamma[0][state]) + logEmission[state][(*this->binner)[this->data[0]]];
 		psi[0][state] = 0;
 	}
+	
+	unsigned long timeOffset = 0;
+	for (unsigned int chunkIndex = 0; chunkIndex < this->chunkCount; chunkIndex += 1){
+		unsigned long currentChunkSizes = this->chunkSizes[chunkIndex];
+		
+		for (unsigned int t = 1; t < currentChunkSizes; t += 1){
+			for (unsigned int state = 0; state < this->stateCount; state += 1){
+				double maxValue = v[timeOffset + t-1][0] + logTransition[0][state] + logEmission[state][(*this->binner)[this->data[timeOffset + t]]];
 
-	for (unsigned int t = 1; t < this->dataSize; t += 1){
-		for (unsigned int state = 0; state < this->stateCount; state += 1){
-			double maxValue = v[t-1][0] + logTransition[0][state] + logEmission[state][(*this->binner)[this->data[t]]];
-
-			for (unsigned int lastState = 1; lastState < this->stateCount; lastState += 1){
-				double value = v[t-1][lastState] + logTransition[lastState][state] + logEmission[state][(*this->binner)[this->data[t]]];
-				if (value > maxValue){
-					maxValue = value;
+				for (unsigned int lastState = 1; lastState < this->stateCount; lastState += 1){
+					double value = v[timeOffset + t-1][lastState] + logTransition[lastState][state] + logEmission[state][(*this->binner)[this->data[timeOffset + t]]];
+					if (value > maxValue){
+						maxValue = value;
+					}
 				}
+				v[timeOffset + t][state] = maxValue;
 			}
-			v[t][state] = maxValue;
-		}
 
-		for (unsigned int state = 0; state < this->stateCount; state += 1){
-			unsigned int maxIndex = 0;
-			double maxValue = v[t][0] + logTransition[0][state];
-			for (unsigned int from = 1; from < this->stateCount; from += 1){
-				double value = v[t][from] + logTransition[from][state];
-				if (value > maxValue){
-					maxValue = value;
-					maxIndex = from;
+			for (unsigned int state = 0; state < this->stateCount; state += 1){
+				unsigned int maxIndex = 0;
+				double maxValue = v[timeOffset + t][0] + logTransition[0][state];
+				for (unsigned int from = 1; from < this->stateCount; from += 1){
+					double value = v[timeOffset + t][from] + logTransition[from][state];
+					if (value > maxValue){
+						maxValue = value;
+						maxIndex = from;
+					}
 				}
+				psi[timeOffset + t][state] = maxIndex;
 			}
-			psi[t][state] = maxIndex;
 		}
-	}
 
-	unsigned int maxEndState = 0;
-	double value = v[this->dataSize - 1][0];
-	for (unsigned int state = 1; state < this->stateCount; state += 1){
-		if (v[this->dataSize - 1][state] > value){
-			value = v[this->dataSize - 1][state];
-			maxEndState = state;
+		unsigned int maxEndState = 0;
+		double value = v[timeOffset + currentChunkSizes - 1][0];
+		for (unsigned int state = 1; state < this->stateCount; state += 1){
+			if (v[timeOffset + currentChunkSizes - 1][state] > value){
+				value = v[timeOffset + currentChunkSizes - 1][state];
+				maxEndState = state;
+			}
 		}
-	}
 
-	states[this->dataSize - 1] = maxEndState;
-	for (int t = this->dataSize - 2; t >= 0; t -= 1){
-		states[t] = psi[t + 1][states[t + 1]];
+		states[timeOffset + currentChunkSizes - 1] = maxEndState;
+		for (int t = currentChunkSizes - 2; t >= 0; t -= 1){
+			states[timeOffset + t] = psi[timeOffset + t + 1][states[timeOffset + t + 1]];
+		}
+		timeOffset += currentChunkSizes;
 	}
 }
 

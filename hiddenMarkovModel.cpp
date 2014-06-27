@@ -29,7 +29,7 @@ int _tmain(int argc, _TCHAR* argv[])
 	HMMConfiguration configuration = HMMConfiguration::fromFile(std::ifstream("test.json"));
 	
 	std::cout << "create model" << std::endl;
-	HMM model (data, dataSize, states, configuration);
+	HMM model (data, std::vector<unsigned long>(2, dataSize/ 2), states, configuration);
 
 	array1D binnerRange(2, 0);
 	model.getBinningRange(binnerRange);

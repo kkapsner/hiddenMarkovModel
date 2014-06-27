@@ -8,6 +8,7 @@
 #include "../HMM.cpp"
 #include "../Binner.cpp"
 #include "../include/jsoncpp.cpp"
+#include <iostream>
 
 #define DEFAULT_FALSE(name){\
     value = mxGetField(options, 0, #name);\
@@ -103,7 +104,7 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]){
 	using namespace hiddenMarkovModel;
 
 	HMMConfiguration configuration;
-	if (nrhs > 3){
+	if (nrhs > 3 && (int) mxGetM(prhs[3]) * (int) mxGetN(prhs[3]) != 0){
 		mxArray const *options = prhs[3];
 		if (mxIsStruct(options)){
 			// load configuration from MATLAB struct
@@ -159,23 +160,38 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]){
 		initStates.push_back(new GaussState(gauss[i], gauss[statesCount + i]));
 	}
 	
-	// check for NaN at the start
-	dataStart = 0;
-	for (unsigned int i = 0; i < dataPointCount; i += 1){
-		if (!mxIsNaN(data[i])){
-			dataStart = i;
-			break;
+	std::vector<unsigned long> chunkSizes(1, dataPointCount);
+	if (dataSize[0] == 1 || dataSize[1] == 1){
+		// check for NaN at the start
+		dataStart = 0;
+		for (unsigned int i = 0; i < dataPointCount; i += 1){
+			if (!mxIsNaN(data[i])){
+				dataStart = i;
+				break;
+			}
+		}
+		// check for NaN at the end
+		for (dataEnd = dataStart; dataEnd < dataPointCount; dataEnd += 1){
+			if (mxIsNaN(data[dataEnd])){
+				break;
+			}
+		}
+		data = data + dataStart;
+		chunkSizes[0] = dataEnd - dataStart;
+	}
+	else {
+		dataStart = 0;
+		dataEnd = dataPointCount;
+		chunkSizes.resize(dataSize[1]);
+		for (unsigned int i = 0; i < dataSize[1]; i += 1){
+			chunkSizes[i] = dataSize[0];
+			// std::cout << i << ": " << chunkSizes[i] << std::endl;
 		}
 	}
-	// check for NaN at the end
-	for (dataEnd = dataStart; dataEnd < dataPointCount; dataEnd += 1){
-		if (mxIsNaN(data[dataEnd])){
-			break;
-		}
-	}
-
-	HMM model (data + dataStart, dataEnd - dataStart, initStates, configuration);
-
+	// std::cout << chunkSizes.size() << std::endl;
+	
+	HMM model(data, chunkSizes, initStates, configuration);
+	
 	// delete state pointers
 	initStates.clear();
 
@@ -188,9 +204,9 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]){
 	model.run(iterationCount);
 
 	std::vector<unsigned int> states (dataEnd - dataStart, 0);
-
+	
 	model.viterbi(states);
-
+	
 	for (unsigned int i = 0; i < dataSize[0] * dataSize[1]; i += 1){
 		if (i < dataStart || i >= dataEnd){
 			statesOut[i] = mxGetNaN();

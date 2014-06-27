@@ -15,6 +15,9 @@ namespace hiddenMarkovModel{
 		
 		// size of the data
 		unsigned long dataSize;
+		// sizes of the different data chunk regions
+		unsigned int chunkCount;
+		std::vector<unsigned long> chunkSizes;
 		// the dataset to model
 		double *data;
 			
@@ -44,12 +47,17 @@ namespace hiddenMarkovModel{
 		// emission probability. size stateCount x binner->getSize()
 		// emission[i][binner->getBinIndex(value)] = probability that state i emits value
 		array2D emission;
+
+		// initiation in the constructor
+		void init(double *data, std::vector<unsigned long> dataSizes, std::vector<InitialEmissionProbability*> states);
 	public:
 		// 
 		const HMMConfiguration configuration;
 
 		// constructor
 		HMM(double *data, unsigned long dataSize, std::vector<InitialEmissionProbability*> states, HMMConfiguration configuration = HMMConfiguration());
+		HMM(double *data, std::vector<unsigned long> dataSizes, std::vector<InitialEmissionProbability*> states, HMMConfiguration configuration = HMMConfiguration());
+		
 		// destructor
 		~HMM();
 
