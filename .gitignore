@@ -1,5 +1,6 @@
 stdafx.*
 targetver.h
+*.asv
 
 #################
 ## Eclipse
