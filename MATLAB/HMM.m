@@ -15,7 +15,7 @@ function varargout = HMM(data, dim, transitions, gaussianDefinitions, options)
 %SEE ALSO: HMM_CPP
     
     if (nargin < 5)
-        if (size(transitions, 1) ~= size(gaussianDefinitions, 1))
+        if (nargin < 4 || size(transitions, 1) ~= size(gaussianDefinitions, 1))
             if (nargin == 4)
                 options = gaussianDefinitions;
             else
