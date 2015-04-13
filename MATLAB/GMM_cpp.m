@@ -10,9 +10,11 @@
 %
 % Return values:
 %   mu: mean values of the gaussians
-%   sigma: standard deviations of the gaussian.
+%   sigma: standard deviations of the gaussians.
+%   mixtures: ratio of the gaussians.
 %   numberOfIterations: number of iterations the algorithm performed.
 %
 %Calling schemes:
 %   [mu, sigma] = GMM_CPP(data, numberOfStates);
-%   [mu, sigma, numberOfIterations] = GMM_CPP(...);
+%   [mu, sigma, mixtures] = GMM_CPP(...);
+%   [mu, sigma, mixtures, numberOfIterations] = GMM_CPP(...);
