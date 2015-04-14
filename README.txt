@@ -1,4 +1,0 @@
-#hiddenMarkovModel
-
-Literature list:
-    
